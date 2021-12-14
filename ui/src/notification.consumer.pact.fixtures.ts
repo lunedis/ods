@@ -55,3 +55,12 @@ export const getNotificationsForPipelineSuccessReponse: ResponseOptions = {
   },
   body: eachLike(exampleNotificationConfigReadModel),
 };
+
+export const getNotificationsForPipelineEmptySuccessResponse: ResponseOptions =
+  {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+    },
+    body: [],
+  };

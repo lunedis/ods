@@ -67,6 +67,7 @@ describe('Pact Provider Verification', () => {
       stateHandlers: {
         'notification configs for pipeline 1 exist':
           setupSomeNotificationConfigs,
+        'notification configs for pipeline 1 do not exist': setupEmptyState,
       },
     });
     await verifier.verifyProvider().finally(() => {
@@ -77,6 +78,11 @@ describe('Pact Provider Verification', () => {
 
 function clearState(): void {
   notificationConfigs.splice(0, notificationConfigs.length);
+}
+
+async function setupEmptyState(): Promise<void> {
+  clearState();
+  return Promise.resolve();
 }
 
 async function setupSomeNotificationConfigs(): Promise<void> {

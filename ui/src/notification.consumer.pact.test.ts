@@ -4,6 +4,7 @@ import { JestPactOptions, pactWith } from 'jest-pact';
 
 import {
   exampleNotificationConfig,
+  getNotificationsForPipelineEmptySuccessResponse,
   getNotificationsForPipelineRequest,
   getNotificationsForPipelineRequestTitle,
   getNotificationsForPipelineSuccessReponse,
@@ -43,6 +44,19 @@ pactWith(options, (provider) => {
         const configs = await restService.getAllByPipelineId(pipelineId);
 
         expect(configs).toStrictEqual([exampleNotificationConfig]);
+      });
+    });
+
+    describe('when notification configs for this pipeline do not exist', () => {
+      const pipelineId = 1;
+
+      beforeEach(async () => {
+        await provider.addInteraction({
+          state: `notification configs for pipeline ${pipelineId} do not exist`,
+          uponReceiving: getNotificationsForPipelineRequestTitle(pipelineId),
+          withRequest: getNotificationsForPipelineRequest(pipelineId),
+          willRespondWith: getNotificationsForPipelineEmptySuccessResponse,
+        });
       });
     });
   });
