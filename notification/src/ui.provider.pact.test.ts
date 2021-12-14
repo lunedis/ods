@@ -62,6 +62,7 @@ describe('Pact Provider Verification', () => {
         'notification configs for pipeline 1 do not exist': setupEmptyState,
         'notification config with id 1 exists': setupSomeNotificationConfigs,
         'notification config with id 1 does not exist': setupEmptyState,
+        'any state': setupSomeNotificationConfigs,
       },
     });
     await verifier.verifyProvider().finally(() => {

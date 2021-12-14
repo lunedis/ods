@@ -3,6 +3,9 @@ import path from 'path';
 import { JestPactOptions, pactWith } from 'jest-pact';
 
 import {
+  createNotificationRequest,
+  createNotificationRequestTitle,
+  createNotificationResponse,
   exampleNotificationConfig,
   exampleNotificationConfigReadModel,
   getNotificationNotFoundResponse,
@@ -106,6 +109,19 @@ pactWith(options, (provider) => {
 
       it('throws an error?', async () => {
         await expect(restService.getById(id)).rejects.toThrow(Error);
+      });
+    });
+  });
+
+  describe('creating a notification config', () => {
+    describe('with a valid notification config', () => {
+      beforeEach(async () => {
+        await provider.addInteraction({
+          state: `any state`,
+          uponReceiving: createNotificationRequestTitle,
+          withRequest: createNotificationRequest,
+          willRespondWith: createNotificationResponse,
+        });
       });
     });
   });

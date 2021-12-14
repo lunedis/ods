@@ -1,7 +1,7 @@
 import { RequestOptions, ResponseOptions } from '@pact-foundation/pact';
 import { eachLike, like } from '@pact-foundation/pact/src/dsl/matchers';
 
-import {
+import NotificationConfig, {
   NotificationType,
   WebhookNotification,
 } from './notification/notificationConfig';
@@ -24,6 +24,16 @@ export const exampleNotificationConfigReadModel: NotificationApiReadModel = {
   type: NotificationType.WEBHOOK,
   parameter: {
     url: 'https://url.to.webhook.com/hook',
+  },
+};
+
+export const exampleCreateNotificationModel: NotificationConfig = {
+  id: 1000,
+  pipelineId: 5,
+  condition: 'false',
+  type: NotificationType.WEBHOOK,
+  parameters: {
+    url: 'https://url.to.new.webhook.com/hook',
   },
 };
 
@@ -84,4 +94,24 @@ export const getNotificationSuccessResponse: ResponseOptions = {
 export const getNotificationNotFoundResponse: ResponseOptions = {
   status: 404,
   body: '',
+};
+
+export const createNotificationRequestTitle =
+  'a request for creating a new notification config';
+
+export const createNotificationRequest: RequestOptions = {
+  method: 'POST',
+  path: '/configs',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: exampleCreateNotificationModel,
+};
+
+export const createNotificationResponse: ResponseOptions = {
+  status: 201,
+  headers: {
+    'Content-Type': 'application/json; charset=utf-8',
+  },
+  body: like(exampleNotificationConfigReadModel),
 };
