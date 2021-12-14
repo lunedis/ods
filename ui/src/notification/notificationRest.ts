@@ -1,72 +1,81 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
-import { NOTIFICATION_SERVICE_URL } from '@/env';
 import NotificationConfig, {
   NotificationParameters,
   NotificationType,
 } from '@/notification/notificationConfig';
 
-/**
- * Axios instance with default headers and base url.
- * The option transformResponse is set to an empty array
- * because of explicit JSON.parser call with custom reviver.
- */
-const http = axios.create({
-  baseURL: `${NOTIFICATION_SERVICE_URL}`,
-  headers: { 'Content-Type': 'application/json' },
-  transformResponse: [],
-});
+export class NotificationRest {
+  private readonly axiosInstance: AxiosInstance;
 
-export async function getAllByPipelineId(
-  pipelineId: number,
-): Promise<NotificationConfig[]> {
-  const response = await http.get(`/configs?pipelineId=${pipelineId}`);
-  const notifications = JSON.parse(response.data) as NotificationApiReadModel[];
-  return fromApiReadModels(notifications);
+  constructor(url: string) {
+    /**
+     * Axios instance with default headers and base url.
+     * The option transformResponse is set to an empty array
+     * because of explicit JSON.parser call with custom reviver.
+     */
+    this.axiosInstance = axios.create({
+      baseURL: url,
+      headers: { 'Content-Type': 'application/json' },
+      transformResponse: [],
+    });
+  }
+
+  async getAllByPipelineId(pipelineId: number): Promise<NotificationConfig[]> {
+    const response = await this.axiosInstance.get(
+      `/configs?pipelineId=${pipelineId}`,
+    );
+    const notifications = JSON.parse(
+      response.data,
+    ) as NotificationApiReadModel[];
+    return fromApiReadModels(notifications);
+  }
+
+  async getById(id: number): Promise<NotificationConfig> {
+    const response = await this.axiosInstance.get(`/configs/${id}`);
+    const notificationApiModel = JSON.parse(
+      response.data,
+    ) as NotificationApiReadModel;
+    return fromApiReadModel(notificationApiModel);
+  }
+
+  async create(
+    notificationConfig: NotificationConfig,
+  ): Promise<NotificationConfig> {
+    const apiModel = toApiWriteModel(notificationConfig);
+
+    const response = await this.axiosInstance.post(
+      '/configs',
+      JSON.stringify(apiModel),
+    );
+    const notificationApiModel = JSON.parse(
+      response.data,
+    ) as NotificationApiReadModel;
+    return fromApiReadModel(notificationApiModel);
+  }
+
+  async update(notificationConfig: NotificationConfig): Promise<void> {
+    const id = notificationConfig.id;
+    const apiModel = toApiWriteModel(notificationConfig);
+
+    return await this.axiosInstance.put(
+      `/configs/${id}`,
+      JSON.stringify(apiModel),
+    );
+  }
+
+  async remove(notificationConfig: NotificationConfig): Promise<void> {
+    const id = notificationConfig.id;
+
+    return await this.axiosInstance.delete(`/configs/${id}`);
+  }
 }
 
-export async function getById(id: number): Promise<NotificationConfig> {
-  const response = await http.get(`/configs/${id}`);
-  const notificationApiModel = JSON.parse(
-    response.data,
-  ) as NotificationApiReadModel;
-  return fromApiReadModel(notificationApiModel);
-}
-
-export async function create(
-  notificationConfig: NotificationConfig,
-): Promise<NotificationConfig> {
-  const apiModel = toApiWriteModel(notificationConfig);
-
-  const response = await http.post('/configs', JSON.stringify(apiModel));
-  const notificationApiModel = JSON.parse(
-    response.data,
-  ) as NotificationApiReadModel;
-  return fromApiReadModel(notificationApiModel);
-}
-
-export async function update(
-  notificationConfig: NotificationConfig,
-): Promise<void> {
-  const id = notificationConfig.id;
-  const apiModel = toApiWriteModel(notificationConfig);
-
-  return await http.put(`/configs/${id}`, JSON.stringify(apiModel));
-}
-
-export async function remove(
-  notificationConfig: NotificationConfig,
-): Promise<void> {
-  const id = notificationConfig.id;
-
-  return await http.delete(`/configs/${id}`);
-}
-
-interface NotificationApiReadModel extends NotificationApiWriteModel {
+export interface NotificationApiReadModel extends NotificationApiWriteModel {
   id: number;
 }
 
-interface NotificationApiWriteModel {
+export interface NotificationApiWriteModel {
   pipelineId: number;
   condition: string;
   type: ApiNotificationType;
@@ -101,5 +110,5 @@ function fromApiReadModel(
 function fromApiReadModels(
   notificationApiModels: NotificationApiReadModel[],
 ): NotificationConfig[] {
-  return notificationApiModels.map(x => fromApiReadModel(x));
+  return notificationApiModels.map((x) => fromApiReadModel(x));
 }
