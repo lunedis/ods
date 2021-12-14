@@ -1,5 +1,5 @@
 import { RequestOptions, ResponseOptions } from '@pact-foundation/pact';
-import { eachLike } from '@pact-foundation/pact/src/dsl/matchers';
+import { eachLike, like } from '@pact-foundation/pact/src/dsl/matchers';
 
 import {
   NotificationType,
@@ -27,26 +27,23 @@ export const exampleNotificationConfigReadModel: NotificationApiReadModel = {
   },
 };
 
-export function getNotificationsForPipelineRequestTitle(
+export const getNotificationsForPipelineRequestTitle = (
   pipelineId: number,
-): string {
-  return `a request for getting all notification configs for the pipeline with id ${pipelineId}`;
-}
+): string =>
+  `a request for getting all notification configs for the pipeline with id ${pipelineId}`;
 
-export function getNotificationsForPipelineRequest(
+export const getNotificationsForPipelineRequest = (
   pipelineId: number,
-): RequestOptions {
-  return {
-    method: 'GET',
-    path: `/configs`,
-    query: {
-      pipelineId: pipelineId.toString(),
-    },
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  };
-}
+): RequestOptions => ({
+  method: 'GET',
+  path: `/configs`,
+  query: {
+    pipelineId: pipelineId.toString(),
+  },
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 export const getNotificationsForPipelineSuccessReponse: ResponseOptions = {
   status: 200,
@@ -64,3 +61,27 @@ export const getNotificationsForPipelineEmptySuccessResponse: ResponseOptions =
     },
     body: [],
   };
+
+export const getNotificationRequestTitle = (id: number): string =>
+  `a request for getting the notification config with id ${id}`;
+
+export const getNotificationRequest = (id: number): RequestOptions => ({
+  method: 'GET',
+  path: `/configs/${id}`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+export const getNotificationSuccessResponse: ResponseOptions = {
+  status: 200,
+  headers: {
+    'Content-Type': 'application/json; charset=utf-8',
+  },
+  body: like(exampleNotificationConfigReadModel),
+};
+
+export const getNotificationNotFoundResponse: ResponseOptions = {
+  status: 404,
+  body: '',
+};

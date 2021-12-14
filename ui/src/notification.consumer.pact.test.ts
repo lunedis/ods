@@ -4,6 +4,11 @@ import { JestPactOptions, pactWith } from 'jest-pact';
 
 import {
   exampleNotificationConfig,
+  exampleNotificationConfigReadModel,
+  getNotificationNotFoundResponse,
+  getNotificationRequest,
+  getNotificationRequestTitle,
+  getNotificationSuccessResponse,
   getNotificationsForPipelineEmptySuccessResponse,
   getNotificationsForPipelineRequest,
   getNotificationsForPipelineRequestTitle,
@@ -57,6 +62,50 @@ pactWith(options, (provider) => {
           withRequest: getNotificationsForPipelineRequest(pipelineId),
           willRespondWith: getNotificationsForPipelineEmptySuccessResponse,
         });
+      });
+
+      it('returns an empty array', async () => {
+        const configs = await restService.getAllByPipelineId(pipelineId);
+
+        expect(configs).toStrictEqual([]);
+      });
+    });
+  });
+
+  describe('get notification by id', () => {
+    describe('when notification config exists', () => {
+      const id = 1;
+
+      beforeEach(async () => {
+        await provider.addInteraction({
+          state: `notification config with id ${id} exists`,
+          uponReceiving: getNotificationRequestTitle(id),
+          withRequest: getNotificationRequest(id),
+          willRespondWith: getNotificationSuccessResponse,
+        });
+      });
+
+      it('returns the requested notification config', async () => {
+        const config = await restService.getById(id);
+
+        expect(config).toStrictEqual(exampleNotificationConfig);
+      });
+    });
+
+    describe('when notification config does not exist', () => {
+      const id = 1;
+
+      beforeEach(async () => {
+        await provider.addInteraction({
+          state: `notification config with id ${id} does not exist`,
+          uponReceiving: getNotificationRequestTitle(id),
+          withRequest: getNotificationRequest(id),
+          willRespondWith: getNotificationNotFoundResponse,
+        });
+      });
+
+      it('throws an error?', async () => {
+        await expect(restService.getById(id)).rejects.toThrow(Error);
       });
     });
   });

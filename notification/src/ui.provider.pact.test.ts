@@ -12,48 +12,40 @@ import { port, server } from './index'; // The main method is automatically call
 
 const notificationConfigs: NotificationConfig[] = [];
 
-jest.mock('./notification-config/postgresNotificationRepository', () => {
-  return {
-    initNotificationRepository: jest
+jest.mock('./notification-config/postgresNotificationRepository', () => ({
+  initNotificationRepository: jest
+    .fn()
+    .mockImplementation(async () =>
+      Promise.resolve(new PostgresNotificationRepository()),
+    ),
+  PostgresNotificationRepository: jest.fn().mockImplementation(() => ({
+    getForPipeline: jest
       .fn()
-      .mockImplementation(async () =>
-        Promise.resolve(new PostgresNotificationRepository()),
+      .mockImplementation(async (pipelineId: number) =>
+        Promise.resolve(
+          notificationConfigs.filter((n) => n.pipelineId === pipelineId),
+        ),
       ),
-    PostgresNotificationRepository: jest.fn().mockImplementation(() => {
-      return {
-        getForPipeline: jest
-          .fn()
-          .mockImplementation(async (pipelineId: number) =>
-            Promise.resolve(
-              notificationConfigs.filter((n) => n.pipelineId === pipelineId),
-            ),
-          ),
-        getById: jest
-          .fn()
-          .mockImplementation(async (id: number) =>
-            Promise.resolve(notificationConfigs.find((n) => n.id === id)),
-          ),
-        getAll: jest.fn().mockImplementation(() => notificationConfigs),
-        // Create,
-        // Update,
-        // Delete
-      };
-    }),
-  };
-});
+    getById: jest
+      .fn()
+      .mockImplementation(async (id: number) =>
+        Promise.resolve(notificationConfigs.find((n) => n.id === id)),
+      ),
+    getAll: jest.fn().mockImplementation(() => notificationConfigs),
+    // Create,
+    // Update,
+    // Delete
+  })),
+}));
 
 // The following mocks are needed for propper execution of the main function
-jest.mock('@jvalue/node-dry-amqp', () => {
-  return {
-    AmqpConnection: jest.fn(),
-  };
-});
+jest.mock('@jvalue/node-dry-amqp', () => ({
+  AmqpConnection: jest.fn(),
+}));
 
-jest.mock('./api/amqp/pipelineSuccessConsumer', () => {
-  return {
-    createPipelineSuccessConsumer: jest.fn(),
-  };
-});
+jest.mock('./api/amqp/pipelineSuccessConsumer', () => ({
+  createPipelineSuccessConsumer: jest.fn(),
+}));
 
 describe('Pact Provider Verification', () => {
   it('validates the expectations of the UI', async () => {
@@ -68,6 +60,8 @@ describe('Pact Provider Verification', () => {
         'notification configs for pipeline 1 exist':
           setupSomeNotificationConfigs,
         'notification configs for pipeline 1 do not exist': setupEmptyState,
+        'notification config with id 1 exists': setupSomeNotificationConfigs,
+        'notification config with id 1 does not exist': setupEmptyState,
       },
     });
     await verifier.verifyProvider().finally(() => {
@@ -95,6 +89,26 @@ async function setupSomeNotificationConfigs(): Promise<void> {
     type: NotificationType.WEBHOOK,
     parameter: {
       url: 'https://url.to.webhook.com/hook',
+    },
+  });
+  notificationConfigs.push({
+    id: 2,
+    pipelineId: 4,
+    condition: 'true',
+    type: NotificationType.WEBHOOK,
+    parameter: {
+      url: 'https://url.to.other.webhook.com/hook',
+    },
+  });
+  notificationConfigs.push({
+    id: 3,
+    pipelineId: 5,
+    condition: 'true',
+    type: NotificationType.SLACK,
+    parameter: {
+      channelId: 'abc',
+      secret: 'secret',
+      workspaceId: 'def',
     },
   });
   return Promise.resolve();
