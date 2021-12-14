@@ -71,9 +71,9 @@
 import Vue from 'vue';
 import Component from 'vue-class-component';
 
-import * as NotificaitonREST from './notificationRest';
-
 import NotificationConfig from '@/notification/notificationConfig';
+import { NOTIFICATION_SERVICE_URL } from '../env';
+import { NotificationRest } from './notificationRest';
 
 @Component({})
 export default class PipelineNotifications extends Vue {
@@ -83,6 +83,8 @@ export default class PipelineNotifications extends Vue {
     { text: 'Condition', value: 'condition' },
     { text: 'Actions', value: 'action' },
   ];
+
+  private notificationRest = new NotificationRest(NOTIFICATION_SERVICE_URL);
 
   private pipelineId = -1;
   private notifications: NotificationConfig[] = [];
@@ -123,13 +125,13 @@ export default class PipelineNotifications extends Vue {
   private async onDeleteNotification(
     notification: NotificationConfig,
   ): Promise<void> {
-    await NotificaitonREST.remove(notification);
+    await this.notificationRest.remove(notification);
     await this.loadNotifications();
   }
 
   private async loadNotifications(): Promise<void> {
     this.isLoading = true;
-    this.notifications = await NotificaitonREST.getAllByPipelineId(
+    this.notifications = await this.notificationRest.getAllByPipelineId(
       this.pipelineId,
     );
     this.isLoading = false;
