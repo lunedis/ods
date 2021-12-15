@@ -6,8 +6,8 @@ import {
   createNotificationRequest,
   createNotificationRequestTitle,
   createNotificationResponse,
+  exampleCreateNotificationConfig,
   exampleNotificationConfig,
-  exampleNotificationConfigReadModel,
   getNotificationNotFoundResponse,
   getNotificationRequest,
   getNotificationRequestTitle,
@@ -107,7 +107,7 @@ pactWith(options, (provider) => {
         });
       });
 
-      it('throws an error?', async () => {
+      it('throws an error', async () => {
         await expect(restService.getById(id)).rejects.toThrow(Error);
       });
     });
@@ -122,6 +122,14 @@ pactWith(options, (provider) => {
           withRequest: createNotificationRequest,
           willRespondWith: createNotificationResponse,
         });
+      });
+
+      it('returns the created notification config', async () => {
+        const config = await restService.create(
+          exampleCreateNotificationConfig,
+        );
+
+        expect(config).toStrictEqual(exampleCreateNotificationConfig);
       });
     });
   });

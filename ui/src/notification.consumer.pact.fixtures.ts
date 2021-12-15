@@ -1,11 +1,14 @@
 import { RequestOptions, ResponseOptions } from '@pact-foundation/pact';
 import { eachLike, like } from '@pact-foundation/pact/src/dsl/matchers';
 
-import NotificationConfig, {
+import {
   NotificationType,
   WebhookNotification,
 } from './notification/notificationConfig';
-import { NotificationApiReadModel } from './notification/notificationRest';
+import {
+  NotificationApiReadModel,
+  NotificationApiWriteModel,
+} from './notification/notificationRest';
 
 export const exampleNotificationConfig: WebhookNotification = {
   id: 1,
@@ -27,12 +30,31 @@ export const exampleNotificationConfigReadModel: NotificationApiReadModel = {
   },
 };
 
-export const exampleCreateNotificationModel: NotificationConfig = {
-  id: 1000,
+export const exampleCreateNotificationConfig: WebhookNotification = {
+  id: 5,
   pipelineId: 5,
   condition: 'false',
   type: NotificationType.WEBHOOK,
   parameters: {
+    url: 'https://url.to.new.webhook.com/hook',
+  },
+};
+
+export const exampleCreateNotificationWriteModel: NotificationApiWriteModel = {
+  pipelineId: 5,
+  condition: 'false',
+  type: NotificationType.WEBHOOK,
+  parameter: {
+    url: 'https://url.to.new.webhook.com/hook',
+  },
+};
+
+export const exampleCreateNotificationReadModel: NotificationApiReadModel = {
+  id: 5,
+  pipelineId: 5,
+  condition: 'false',
+  type: NotificationType.WEBHOOK,
+  parameter: {
     url: 'https://url.to.new.webhook.com/hook',
   },
 };
@@ -105,7 +127,7 @@ export const createNotificationRequest: RequestOptions = {
   headers: {
     'Content-Type': 'application/json',
   },
-  body: exampleCreateNotificationModel,
+  body: exampleCreateNotificationWriteModel,
 };
 
 export const createNotificationResponse: ResponseOptions = {
@@ -113,5 +135,5 @@ export const createNotificationResponse: ResponseOptions = {
   headers: {
     'Content-Type': 'application/json; charset=utf-8',
   },
-  body: like(exampleNotificationConfigReadModel),
+  body: like(exampleCreateNotificationReadModel),
 };

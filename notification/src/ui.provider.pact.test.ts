@@ -32,7 +32,13 @@ jest.mock('./notification-config/postgresNotificationRepository', () => ({
         Promise.resolve(notificationConfigs.find((n) => n.id === id)),
       ),
     getAll: jest.fn().mockImplementation(() => notificationConfigs),
-    // Create,
+    create: jest
+      .fn()
+      .mockImplementation((config: NotificationConfig): NotificationConfig => {
+        const configWithId = { ...config, id: 1000 };
+        notificationConfigs.push(configWithId);
+        return configWithId;
+      }),
     // Update,
     // Delete
   })),
